@@ -5,12 +5,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/onflow/flow-go/engine/access/rpc/backend"
 	"github.com/onflow/flow/protobuf/go/flow/access"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
 )
 
 type APIValidator struct {
+	ctx           context.Context
 	archiveClient access.AccessAPIClient
 	accessClient  access.AccessAPIClient
 	script        []byte
@@ -20,27 +21,25 @@ type APIValidator struct {
 	accountAddr   []byte
 }
 
-func NewAPIValidator(accessAddr string, archiveAddr string) (*APIValidator, error) {
-	factory := new(backend.ConnectionFactoryImpl)
-
-	// connect to Access instance
-
-	accessClient, err := getAPIClient(accessAddr)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to Access API client: %w", err)
-	}
-	archiveClient, err := getAPIClient(archiveAddr)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to Archive API client: %w", err)
-	}
+func NewAPIValidator(accessAddr string, archiveAddr string, ctx context.Context) (*APIValidator, error) {
+	accessClient := getAPIClient(accessAddr)
+	archiveClient := getAPIClient(archiveAddr)
 	return &APIValidator{
 		accessClient:  accessClient,
 		archiveClient: archiveClient,
 	}, nil
 }
 
-func getAPIClient(addr string) (access.AccessAPIClient, error) {
-
+func getAPIClient(addr string) access.AccessAPIClient {
+	// connect to Archive-Access instance
+	MaxGRPCMessageSize := 1024 * 1024 * 20 // 20MB
+	conn, err := grpc.Dial(addr,
+		grpc.WithInsecure(),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize)))
+	if err != nil {
+		panic(fmt.Sprintf("unable to create connection to node: %s", addr))
+	}
+	return access.NewAccessAPIClient(conn)
 }
 
 func (a *APIValidator) CheckAPIResults() error {
@@ -124,10 +123,11 @@ func (a *APIValidator) checkGetAccountAtBlockHeight(ctx context.Context) error {
 
 func main() {
 	// connect to Archive-Access instance
+	ctx := context.Background()
 	accessAddr := ""
 	archiveAddr := ""
 	// connect to Access instance
-	apiValidator, err := NewAPIValidator(accessAddr, archiveAddr)
+	apiValidator, err := NewAPIValidator(accessAddr, archiveAddr, ctx)
 	// compare
 	err = apiValidator.CheckAPIResults()
 	if err != nil {
