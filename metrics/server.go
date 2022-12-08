@@ -24,7 +24,7 @@ func NewServer(log zerolog.Logger, address string) *Server {
 			Addr:    address,
 			Handler: mux,
 		},
-		log: log,
+		log: log.With().Str("module", "metrics_server").Logger(),
 	}
 
 	return &m
