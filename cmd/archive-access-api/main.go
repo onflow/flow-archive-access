@@ -16,6 +16,7 @@ package main
 
 import (
 	"errors"
+	"github.com/onflow/flow-archive-access/metrics"
 	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"net/http"
@@ -57,15 +58,17 @@ func run() int {
 
 	// Command line parameter initialization.
 	var (
-		flagAddress string
-		flagArchive string
-		flagCache   uint64
-		flagLevel   string
+		flagAddress     string
+		flagArchive     string
+		flagCache       uint64
+		flagMetricsAddr string
+		flagLevel       string
 	)
 
 	pflag.StringVarP(&flagAddress, "address", "a", "127.0.0.1:9000", "address to serve Access API on")
 	pflag.StringVarP(&flagArchive, "archive", "d", "127.0.0.1:80", "host URL for Archive API endpoint")
 	pflag.StringVarP(&flagLevel, "level", "l", "info", "log output level")
+	pflag.StringVarP(&flagMetricsAddr, "metrics", "m", "", "address on which to expose metrics (no metrics are exposed when left empty)")
 
 	pflag.Uint64Var(&flagCache, "cache-size", 1_000_000_000, "maximum cache size for register reads in bytes")
 
@@ -126,6 +129,7 @@ func run() int {
 		log.Error().Str("address", flagAddress).Err(err).Msg("could not listen")
 		return failure
 	}
+	metricsEnabled := flagMetricsAddr != ""
 	done := make(chan struct{})
 	failed := make(chan struct{})
 	go func() {
@@ -141,7 +145,19 @@ func run() int {
 		}
 		log.Info().Msg("Flow Access API Server stopped")
 	}()
+	go func() {
+		if !metricsEnabled {
+			return
+		}
 
+		log.Info().Msg("metrics server starting")
+		server := metrics.NewServer(log, flagMetricsAddr)
+		err := server.Start()
+		if err != nil {
+			log.Warn().Err(err).Msg("metrics server failed")
+		}
+		log.Info().Msg("metrics server stopped")
+	}()
 	select {
 	case <-sig:
 		log.Info().Msg("Flow Access API Server stopping")
