@@ -68,7 +68,7 @@ func run() int {
 	pflag.StringVarP(&flagAddress, "address", "a", "127.0.0.1:9000", "address to serve Access API on")
 	pflag.StringVarP(&flagArchive, "archive", "d", "127.0.0.1:80", "host URL for Archive API endpoint")
 	pflag.StringVarP(&flagLevel, "level", "l", "info", "log output level")
-	pflag.StringVarP(&flagMetricsAddr, "metrics", "m", "", "address on which to expose metrics (no metrics are exposed when left empty)")
+	pflag.StringVarP(&flagMetricsAddr, "metrics", "m", "127.0.0.1:8080", "address on which to expose metrics (no metrics are exposed when left empty)")
 
 	pflag.Uint64Var(&flagCache, "cache-size", 1_000_000_000, "maximum cache size for register reads in bytes")
 
