@@ -35,6 +35,18 @@ compile:
 lint:
 	golangci-lint run -v --build-tags relic --timeout=3m
 
+.PHONY: validate-api
+validate: create-validator-binary run-validator
+
+
+.PHONY: create-validator-binary
+create-validator-binary:
+	cd admin/validator && go build -o archive_validator main.go
+
+.PHONY: run-validator
+run-validator:
+	cd admin/validator && ./archive_validator
+
 # Docker Utilities! Do not delete these targets
 #############################################################################################################
 
