@@ -5,12 +5,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/onflow/flow-go/model/flow"
 	"github.com/onflow/flow/protobuf/go/flow/access"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
-	"os"
-	"time"
 )
 
 type APIValidator struct {
@@ -67,7 +68,7 @@ func getAPIClient(addr string) access.AccessAPIClient {
 }
 
 func (a *APIValidator) CheckAPIResults(ctx context.Context) error {
-	log.Info().Msg("starting comparison")
+	log.Info().Msgf("starting comparison for block %v (%x)", a.blockHeight, a.blockID)
 	// ExecuteScriptAtBlockID
 	err := a.checkExecuteScriptAtBlockID(ctx)
 	if err != nil {
