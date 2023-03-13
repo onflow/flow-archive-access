@@ -110,7 +110,7 @@ func (a *APIValidator) checkExecuteScriptAtBlockID(ctx context.Context) error {
 
 	archiveRes, archiveErr := a.archiveClient.ExecuteScriptAtBlockID(ctx, req)
 	if archiveErr != nil {
-		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockID from access node: %w", archiveErr))
+		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockID from archive node: %w", archiveErr))
 	}
 	log.Debug().Msg(fmt.Sprintf("received ExecuteScriptAtBlockID response from Archive: %s", archiveRes.String()))
 
@@ -119,7 +119,7 @@ func (a *APIValidator) checkExecuteScriptAtBlockID(ctx context.Context) error {
 	}
 
 	if accessRes.String() != archiveRes.String() {
-		return fmt.Errorf("unequal results! ExecuteScriptAtBlockID from access node")
+		return fmt.Errorf("unequal results! for ExecuteScriptAtBlockID")
 	}
 
 	return nil
@@ -142,7 +142,7 @@ func (a *APIValidator) checkExecuteScriptAtBlockHeight(ctx context.Context) erro
 
 	archiveRes, archiveErr := a.archiveClient.ExecuteScriptAtBlockHeight(ctx, req)
 	if archiveErr != nil {
-		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockHeight from access node: %w", archiveErr))
+		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockHeight from archive node: %w", archiveErr))
 	}
 	log.Debug().Msg(fmt.Sprintf("received ExecuteScriptAtBlockHeight response from Archive: %s", archiveRes.String()))
 
@@ -151,7 +151,7 @@ func (a *APIValidator) checkExecuteScriptAtBlockHeight(ctx context.Context) erro
 	}
 
 	if accessRes.String() != archiveRes.String() {
-		return fmt.Errorf("unequal results! ExecuteScriptAtBlockHeight from access node")
+		return fmt.Errorf("unequal results! for ExecuteScriptAtBlockHeight")
 	}
 
 	return nil
