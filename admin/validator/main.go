@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/onflow/flow-go/model/flow"
 	"github.com/onflow/flow/protobuf/go/flow/access"
 	"github.com/rs/zerolog/log"
@@ -30,6 +31,7 @@ func NewAPIValidator(accessAddr string, archiveAddr string, ctx context.Context)
 	archiveClient := getAPIClient(archiveAddr)
 	accountAddr := flow.HexToAddress("e467b9dd11fa00df").Bytes()
 	recentBlock, err := accessClient.GetLatestBlock(ctx, &access.GetLatestBlockRequest{})
+	// recentBlock, err := accessClient.GetBlockByHeight(ctx, &access.GetBlockByHeightRequest{Height: 47421893})
 	// allow for archive node to sync block
 	time.Sleep(5)
 	if err != nil {
@@ -75,12 +77,14 @@ func (a *APIValidator) CheckAPIResults(ctx context.Context) error {
 		return fmt.Errorf("unsuccessful ExecuteScriptAtBlockID comparison: %w", err)
 	}
 	log.Info().Msg("checkExecuteScriptAtBlockID successful")
+
 	// ExecuteScriptAtBlockHeight
 	err = a.checkExecuteScriptAtBlockHeight(ctx)
 	if err != nil {
 		return fmt.Errorf("unsuccessful ExecuteScriptAtBlockHeight comparison: %w", err)
 	}
 	log.Info().Msg("checkExecuteScriptAtBlockHeight successful")
+
 	// GetAccountAtBlockHeight
 	err = a.checkGetAccountAtBlockHeight(ctx)
 	if err != nil {
@@ -91,47 +95,67 @@ func (a *APIValidator) CheckAPIResults(ctx context.Context) error {
 }
 
 func (a *APIValidator) checkExecuteScriptAtBlockID(ctx context.Context) error {
+	var errs *multierror.Error
+
 	req := &access.ExecuteScriptAtBlockIDRequest{
 		BlockId:   a.blockID,
 		Script:    a.script,
 		Arguments: a.arguments,
 	}
-	accessRes, err := a.accessClient.ExecuteScriptAtBlockID(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to get ExecuteScriptAtBlockID from access node: %w", err)
+	accessRes, accessErr := a.accessClient.ExecuteScriptAtBlockID(ctx, req)
+	if accessErr != nil {
+		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockID from access node: %w", accessErr))
 	}
-	log.Debug().Msg(fmt.Sprintf("received GetAccountAtBlockHeight response from AN: %s", accessRes.String()))
-	archiveRes, err := a.archiveClient.ExecuteScriptAtBlockID(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to get ExecuteScriptAtBlockID from archive node: %w", err)
+	log.Debug().Msg(fmt.Sprintf("received ExecuteScriptAtBlockID response from AN: %s", accessRes.String()))
+
+	archiveRes, archiveErr := a.archiveClient.ExecuteScriptAtBlockID(ctx, req)
+	if archiveErr != nil {
+		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockID from access node: %w", archiveErr))
 	}
-	log.Debug().Msg(fmt.Sprintf("received GetAccountAtBlockHeight response from Archive: %s", archiveRes.String()))
+	log.Debug().Msg(fmt.Sprintf("received ExecuteScriptAtBlockID response from Archive: %s", archiveRes.String()))
+
+	if errs != nil {
+		return errs.ErrorOrNil()
+	}
+
 	if accessRes.String() != archiveRes.String() {
-		return fmt.Errorf("unequal results! ExecuteScriptAtBlockID from access node: %w", err)
+		return fmt.Errorf("unequal results! ExecuteScriptAtBlockID from access node")
 	}
+
 	return nil
 }
 
 func (a *APIValidator) checkExecuteScriptAtBlockHeight(ctx context.Context) error {
+	var errs *multierror.Error
+
 	req := &access.ExecuteScriptAtBlockHeightRequest{
 		BlockHeight: a.blockHeight,
 		Script:      a.script,
 		Arguments:   a.arguments,
 	}
-	accessRes, err := a.accessClient.ExecuteScriptAtBlockHeight(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to get ExecuteScriptAtBlockHeight from access node: %w", err)
+
+	accessRes, accessErr := a.accessClient.ExecuteScriptAtBlockHeight(ctx, req)
+	if accessErr != nil {
+		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockHeight from access node: %w", accessErr))
 	}
 	log.Debug().Msg(fmt.Sprintf("received ExecuteScriptAtBlockHeight response from AN: %s", accessRes.String()))
-	archiveRes, err := a.archiveClient.ExecuteScriptAtBlockHeight(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to get ExecuteScriptAtBlockHeight from access node: %w", err)
+
+	archiveRes, archiveErr := a.archiveClient.ExecuteScriptAtBlockHeight(ctx, req)
+	if archiveErr != nil {
+		errs = multierror.Append(errs, fmt.Errorf("failed to get ExecuteScriptAtBlockHeight from access node: %w", archiveErr))
 	}
 	log.Debug().Msg(fmt.Sprintf("received ExecuteScriptAtBlockHeight response from Archive: %s", archiveRes.String()))
-	if accessRes.String() != archiveRes.String() {
-		return fmt.Errorf("unequal results! ExecuteScriptAtBlockHeight from access node: %w", err)
+
+	if errs != nil {
+		return errs.ErrorOrNil()
 	}
+
+	if accessRes.String() != archiveRes.String() {
+		return fmt.Errorf("unequal results! ExecuteScriptAtBlockHeight from access node")
+	}
+
 	return nil
+
 }
 
 func (a *APIValidator) checkGetAccountAtBlockHeight(ctx context.Context) error {
@@ -160,6 +184,7 @@ func main() {
 	ctx := context.TODO()
 	accessAddr := "access.mainnet.nodes.onflow.org:9000"
 	archiveAddr := "archive.mainnet.nodes.onflow.org:9000"
+	// archiveAddr := "dps-001.mainnet-staging1.nodes.onflow.org:9000"
 	// connect to Access instance
 	apiValidator, err := NewAPIValidator(accessAddr, archiveAddr, ctx)
 	if err != nil {
