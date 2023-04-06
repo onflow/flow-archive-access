@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/onflow/flow-go/fvm/blueprints"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -26,7 +27,6 @@ import (
 	"github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-archive/models/archive"
 	conv "github.com/onflow/flow-archive/models/convert"
-	"github.com/onflow/flow-go/consensus/hotstuff/signature"
 	"github.com/onflow/flow-go/engine/common/rpc/convert"
 	"github.com/onflow/flow-go/model/flow"
 	"github.com/onflow/flow/protobuf/go/flow/access"
@@ -95,27 +95,7 @@ func (s *Server) GetBlockHeaderByID(ctx context.Context, in *access.GetBlockHead
 // GetBlockHeaderByHeight implements the GetBlockHeaderByHeight endpoint from the Flow Access API.
 // See https://docs.onflow.org/access-api/#getblockheaderbyheight
 func (s *Server) GetBlockHeaderByHeight(_ context.Context, in *access.GetBlockHeaderByHeightRequest) (*access.BlockHeaderResponse, error) {
-	header, err := s.index.Header(in.Height)
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve block header at height %d: %w", in.Height, err)
-	}
-
-	decoder := signature.NewBlockSignerDecoder(nil)
-	signerIDs, err := decoder.DecodeSignerIDs(header)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode signer ids at height %d: %w", in.Height, err)
-	}
-
-	blockMsg, err := convert.BlockHeaderToMessage(header, signerIDs)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert block header to RPC entity: %w", err)
-	}
-
-	resp := access.BlockHeaderResponse{
-		Block: blockMsg,
-	}
-
-	return &resp, err
+	return nil, errors.New("GetBlockHeaderByHeight is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
 }
 
 // GetLatestBlock implements the GetLatestBlock endpoint from the Flow Access API.
