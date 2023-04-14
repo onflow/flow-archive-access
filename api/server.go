@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/onflow/flow-archive-access/metrics"
 	"github.com/onflow/flow-go/fvm/blueprints"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -43,7 +42,6 @@ type Server struct {
 	index   archive.Reader
 	codec   archive.Codec
 	invoker Invoker
-	metrics *metrics.APIMetricsCollector
 }
 
 // NewServer creates a new server, using the provided index reader as a backend
