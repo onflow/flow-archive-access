@@ -16,13 +16,15 @@ package main
 
 import (
 	"errors"
-	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
@@ -98,6 +100,10 @@ func run() int {
 			logging.StreamServerInterceptor(grpczerolog.InterceptorLogger(log), opts...),
 		),
 	)
+
+	// automatically add metrics with grpc_server_handled_total{grpc_code="Internal|Unknown|OK"}
+	grpc_prometheus.EnableHandlingTimeHistogram()
+	grpc_prometheus.Register(gsvr)
 
 	// Initialize the API client.
 	conn, err := grpc.Dial(flagArchive, grpc.WithTransportCredentials(insecure.NewCredentials()))
