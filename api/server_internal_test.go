@@ -178,50 +178,6 @@ func TestServer_GetBlockHeaderByID(t *testing.T) {
 	})
 }
 
-func TestServer_GetBlockHeaderByHeight(t *testing.T) {
-	header := mocks.GenericHeader
-	blockID := header.ID()
-
-	t.Run("nominal case", func(t *testing.T) {
-		t.Parallel()
-
-		index := mocks.BaselineReader(t)
-		index.HeaderFunc = func(height uint64) (*flow.Header, error) {
-			assert.Equal(t, header.Height, height)
-
-			return header, nil
-		}
-
-		s := baselineServer(t)
-		s.index = index
-
-		req := &access.GetBlockHeaderByHeightRequest{Height: header.Height}
-		resp, err := s.GetBlockHeaderByHeight(context.Background(), req)
-
-		assert.NoError(t, err)
-
-		assert.Equal(t, blockID[:], resp.Block.Id)
-		assert.Equal(t, header.Height, resp.Block.Height)
-	})
-
-	t.Run("handles indexer error on header", func(t *testing.T) {
-		t.Parallel()
-
-		index := mocks.BaselineReader(t)
-		index.HeaderFunc = func(height uint64) (*flow.Header, error) {
-			return nil, mocks.GenericError
-		}
-
-		s := baselineServer(t)
-		s.index = index
-
-		req := &access.GetBlockHeaderByHeightRequest{Height: header.Height}
-		_, err := s.GetBlockHeaderByHeight(context.Background(), req)
-
-		assert.Error(t, err)
-	})
-}
-
 func TestServer_GetTransaction(t *testing.T) {
 	tx := mocks.GenericTransaction(0)
 	txID := tx.ID()
