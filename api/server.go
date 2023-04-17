@@ -27,7 +27,6 @@ import (
 	"github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-archive/models/archive"
 	conv "github.com/onflow/flow-archive/models/convert"
-	"github.com/onflow/flow-go/consensus/hotstuff/signature"
 	"github.com/onflow/flow-go/engine/common/rpc/convert"
 	"github.com/onflow/flow-go/model/flow"
 	"github.com/onflow/flow/protobuf/go/flow/access"
@@ -65,58 +64,19 @@ func (s *Server) Ping(_ context.Context, _ *access.PingRequest) (*access.PingRes
 // GetLatestBlockHeader implements the GetLatestBlockHeader endpoint from the Flow Access API.
 // See https://docs.onflow.org/access-api/#getlatestblockheader
 func (s *Server) GetLatestBlockHeader(ctx context.Context, _ *access.GetLatestBlockHeaderRequest) (*access.BlockHeaderResponse, error) {
-	height, err := s.index.Last()
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve last block height: %w", err)
-	}
-
-	req := access.GetBlockHeaderByHeightRequest{
-		Height: height,
-	}
-
-	return s.GetBlockHeaderByHeight(ctx, &req)
+	return nil, errors.New("GetLatestBlockHeader is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
 }
 
 // GetBlockHeaderByID implements the GetBlockHeaderByID endpoint from the Flow Access API.
 // See https://docs.onflow.org/access-api/#getblockheaderbyid
 func (s *Server) GetBlockHeaderByID(ctx context.Context, in *access.GetBlockHeaderByIDRequest) (*access.BlockHeaderResponse, error) {
-	blockID := flow.HashToID(in.Id)
-	height, err := s.index.HeightForBlock(blockID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get height for block %x: %w", blockID, err)
-	}
-
-	req := access.GetBlockHeaderByHeightRequest{
-		Height: height,
-	}
-
-	return s.GetBlockHeaderByHeight(ctx, &req)
+	return nil, errors.New("GetBlockHeaderByID is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
 }
 
 // GetBlockHeaderByHeight implements the GetBlockHeaderByHeight endpoint from the Flow Access API.
 // See https://docs.onflow.org/access-api/#getblockheaderbyheight
 func (s *Server) GetBlockHeaderByHeight(_ context.Context, in *access.GetBlockHeaderByHeightRequest) (*access.BlockHeaderResponse, error) {
-	header, err := s.index.Header(in.Height)
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve block header at height %d: %w", in.Height, err)
-	}
-
-	decoder := signature.NewBlockSignerDecoder(nil)
-	signerIDs, err := decoder.DecodeSignerIDs(header)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode signer ids at height %d: %w", in.Height, err)
-	}
-
-	blockMsg, err := convert.BlockHeaderToMessage(header, signerIDs)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert block header to RPC entity: %w", err)
-	}
-
-	resp := access.BlockHeaderResponse{
-		Block: blockMsg,
-	}
-
-	return &resp, err
+	return nil, errors.New("GetBlockHeaderByHeight is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
 }
 
 // GetLatestBlock implements the GetLatestBlock endpoint from the Flow Access API.
@@ -368,16 +328,9 @@ func (s *Server) GetTransactionsByBlockID(ctx context.Context, in *access.GetTra
 		return nil, fmt.Errorf("could not get height for block %x: %w", blockId, err)
 	}
 
-	headerReq := access.GetBlockHeaderByHeightRequest{
-		Height: height,
-	}
-	headerResp, err := s.GetBlockHeaderByHeight(ctx, &headerReq)
+	header, err := s.index.Header(height)
 	if err != nil {
-		return nil, fmt.Errorf("could not get header for height %x: %w", height, err)
-	}
-	header, err := convert.MessageToBlockHeader(headerResp.Block)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert header for height %x: %w", height, err)
+		return nil, fmt.Errorf("could not retrieve block header at height %d: %w", height, err)
 	}
 
 	transactions, err := s.index.TransactionsByHeight(height)
