@@ -61,6 +61,24 @@ func (s *Server) Ping(_ context.Context, _ *access.PingRequest) (*access.PingRes
 	return &access.PingResponse{}, nil
 }
 
+// GetLatestBlockHeader implements the GetLatestBlockHeader endpoint from the Flow Access API.
+// See https://docs.onflow.org/access-api/#getlatestblockheader
+func (s *Server) GetLatestBlockHeader(ctx context.Context, _ *access.GetLatestBlockHeaderRequest) (*access.BlockHeaderResponse, error) {
+	return nil, errors.New("GetLatestBlockHeader is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
+}
+
+// GetBlockHeaderByID implements the GetBlockHeaderByID endpoint from the Flow Access API.
+// See https://docs.onflow.org/access-api/#getblockheaderbyid
+func (s *Server) GetBlockHeaderByID(ctx context.Context, in *access.GetBlockHeaderByIDRequest) (*access.BlockHeaderResponse, error) {
+	return nil, errors.New("GetBlockHeaderByID is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
+}
+
+// GetBlockHeaderByHeight implements the GetBlockHeaderByHeight endpoint from the Flow Access API.
+// See https://docs.onflow.org/access-api/#getblockheaderbyheight
+func (s *Server) GetBlockHeaderByHeight(_ context.Context, in *access.GetBlockHeaderByHeightRequest) (*access.BlockHeaderResponse, error) {
+	return nil, errors.New("GetBlockHeaderByHeight is not implemented by the Flow DPS API; please use the Flow Access API on a Flow access node directly")
+}
+
 // GetLatestBlock implements the GetLatestBlock endpoint from the Flow Access API.
 // See https://docs.onflow.org/access-api/#getlatestblock
 func (s *Server) GetLatestBlock(ctx context.Context, in *access.GetLatestBlockRequest) (*access.BlockResponse, error) {
