@@ -135,7 +135,7 @@ func run() int {
 	done := make(chan struct{})
 	failed := make(chan struct{})
 	go func() {
-		log.Info().Msg("Flow Access API Server starting")
+		log.Info().Msgf("Flow Access API Server starting at adress: %v", flagAddress)
 
 		access.RegisterAccessAPIServer(gsvr, server)
 		err = gsvr.Serve(listener)
