@@ -7,8 +7,8 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.0-rc.2
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/onflow/cadence v0.38.1
-	github.com/onflow/flow-archive v0.30.3-archive-node
-	github.com/onflow/flow-go v0.30.3-archive-node
+	github.com/onflow/flow-archive v0.30.3-testing
+	github.com/onflow/flow-go v0.30.3-fix-read-leaf-nodes
 	github.com/onflow/flow/protobuf/go/flow v0.3.2-0.20230330183547-d0dd18f6f20d
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/pflag v1.0.5
