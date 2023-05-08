@@ -1,3 +1,6 @@
+# Deprecation Note
+We are consolidating repos.  Flow Archive Access API was moved to https://github.com/onflow/flow-archive
+
 ## Access API
 
 Flow DPS implements the [Flow Access API Specification](https://developers.flow.com/nodes/access-api), except for the following endpoints:
