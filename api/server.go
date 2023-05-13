@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/onflow/flow-go/fvm/blueprints"
+	"github.com/rs/zerolog/log"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -458,6 +459,7 @@ func (s *Server) ExecuteScriptAtBlockID(ctx context.Context, in *access.ExecuteS
 // ExecuteScriptAtBlockHeight implements the ExecuteScriptAtBlockHeight endpoint from the Flow Access API.
 // See https://docs.onflow.org/access-api/#executescriptatblockheight
 func (s *Server) ExecuteScriptAtBlockHeight(_ context.Context, in *access.ExecuteScriptAtBlockHeightRequest) (*access.ExecuteScriptResponse, error) {
+	log.Info().Msgf("ExecuteScriptAtBlockHeight for block height: %v", in.BlockHeight)
 	var args []cadence.Value
 	for _, arg := range in.Arguments {
 		val, err := json.Decode(nil, arg)
